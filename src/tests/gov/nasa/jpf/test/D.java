@@ -1,7 +1,9 @@
+// src/tests/gov/nasa/jpf/test/D.java
 package gov.nasa.jpf;
 
 public class D {
-    public static void m() {
-        System.out.println("Static method m() is called!");
+    // Non-static method
+    public void m() {
+        System.out.println("Non-static method m() called");
     }
 }

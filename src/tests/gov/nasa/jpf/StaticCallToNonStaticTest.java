@@ -1,16 +1,13 @@
 package gov.nasa.jpf;
 
-import org.junit.AfterClass;
-import gov.nasa.jpf.util.test.TestJPF;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;  
 
-public class StaticCallToNonStaticTest extends TestJPF {
+class StaticCallToNonStaticTest {
 
     @Test
-    public void testStaticCallToNonStatic() {
-        
-        Assertions.assertThrows(java.lang.IncompatibleClassChangeError.class, () -> {
+    void testStaticCallToNonStatic() {
+        Assertions.assertThrows(IncompatibleClassChangeError.class, () -> {
             D.m();  
         });
     }

@@ -32,6 +32,14 @@ dependencies {
     testImplementation 'org.ow2.asm:asm:9.5'
     testImplementation('junit:junit:4.13.1')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+}
+sourceSets {
+    main {
+        java {
+            srcDirs=['src/main']
+        }
+    }
 }
 
 configurations {
@@ -114,9 +122,7 @@ task runModifiedTest(type: Test) {
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
-   include '**/StaticCallToNonStaticTest.class'
-
-    useJUnitPlatform() 
+    include '**/StaticCallToNonStaticTest.class'
 }
 
 tasks.named("runModifiedTest") {
@@ -343,6 +349,7 @@ test {
     maxHeapSize = "1024m"
 
     include "**/*Test.class"
+    include "**/*StaticCallToNonStaticTest.class"
     exclude "**/SplitInputStreamTest.class"
     exclude "**/JPF_*.class"
 
@@ -364,6 +371,7 @@ test {
             println "Summary: " + summaryFields.join(", ")
         }
     }
+    useJUnitPlatform()
 }
 
 jacoco {

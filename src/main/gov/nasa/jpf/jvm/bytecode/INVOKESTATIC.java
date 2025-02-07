@@ -18,6 +18,8 @@
 package gov.nasa.jpf.jvm.bytecode;
 
 
+import java.lang.reflect.Modifier;
+
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -89,6 +91,9 @@ public class INVOKESTATIC extends JVMInvokeInstruction {
       return ti.createAndThrowException("java.lang.NoSuchMethodException", cname + '.' + mname);
     }
 
+    if(!callee.isStatic()) {
+      return ti.createAndThrowException("java.lang.IncompatibleClassChangeError", callee.getFullName());
+    }
     // this can be actually different than (can be a base)
     ClassInfo ciCallee = callee.getClassInfo();
     
