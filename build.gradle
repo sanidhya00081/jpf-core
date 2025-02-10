@@ -122,7 +122,7 @@ task runModifiedTest(type: Test) {
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
-    include '**/StaticCallToNonStaticTest.class'
+    include '**/StaticCallToNonStaticTest'
 }
 
 tasks.named("runModifiedTest") {
@@ -140,7 +140,7 @@ tasks.named('jar') {
     dependsOn(copyLibs)
     dependsOn(copyResources)
 }
-tasks.named("test") {
+tasks.named('test') {
     dependsOn(tasks.named("modifyAndCompileD"))
 }
 tasks.named('modifyAndCompileD') {
@@ -349,7 +349,6 @@ test {
     maxHeapSize = "1024m"
 
     include "**/*Test.class"
-    include "**/*StaticCallToNonStaticTest.class"
     exclude "**/SplitInputStreamTest.class"
     exclude "**/JPF_*.class"
 
@@ -371,7 +370,7 @@ test {
             println "Summary: " + summaryFields.join(", ")
         }
     }
-    useJUnitPlatform()
+    
 }
 
 jacoco {

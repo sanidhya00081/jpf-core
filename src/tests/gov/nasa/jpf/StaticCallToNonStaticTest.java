@@ -1,14 +1,16 @@
 package gov.nasa.jpf;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;  
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Assertions;
 
-class StaticCallToNonStaticTest {
-
+public class StaticCallToNonStaticTest {
+    
     @Test
-    void testStaticCallToNonStatic() {
-        Assertions.assertThrows(IncompatibleClassChangeError.class, () -> {
-            D.m();  
+    public void testStaticCallToNonStatic() {
+        assertThrows(IncompatibleClassChangeError.class, () -> {
+            D.m();  // This should trigger the exception in JPF
         });
     }
+    
 }
