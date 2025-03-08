@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package java.lang;
+package java.base;
 
 import java.io.ObjectStreamField;
 import java.io.UnsupportedEncodingException;

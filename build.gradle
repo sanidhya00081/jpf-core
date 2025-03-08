@@ -5,8 +5,16 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [
+        '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
+        '--add-exports=java.base/sun.nio.cs=ALL-UNNAMED',
+        '--add-exports=java.base/jdk.internal.access=ALL-UNNAMED'
+    ]
 }
 
 gradleEnterprise {
@@ -29,6 +37,8 @@ repositories {
 dependencies {
     testImplementation 'org.ow2.asm:asm:9.5'
     testImplementation('junit:junit:4.13.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 configurations {
@@ -110,7 +120,6 @@ tasks.register('compile') {
     dependsOn compileExamplesJava
     dependsOn compileModules
 }
-
 tasks.register('createJpfClassesJar', Jar) {
     archiveFileName = "jpf-classes.jar"
     destinationDirectory = file("${buildDir}")
@@ -275,6 +284,8 @@ test {
 
     dependsOn buildJars
     jacoco.enabled = false
+
+   
 
     forkEvery = 1
     enableAssertions = true

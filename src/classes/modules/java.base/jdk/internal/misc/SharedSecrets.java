@@ -48,7 +48,6 @@ import java.util.jar.JarFile;
  * to be replaced by some native peers providing the required native calls
  */
 public class SharedSecrets {
-  private static final Unsafe unsafe = Unsafe.getUnsafe();
 
   private static JavaUtilJarAccess javaUtilJarAccess;
   private static JavaLangAccess javaLangAccess;
@@ -82,7 +81,6 @@ public class SharedSecrets {
     if (javaLangInvokeAccess == null) {
       try {
         Class<?> c = Class.forName("java.lang.invoke.MethodHandleImpl");
-        unsafe.ensureClassInitialized(c);
       } catch (ClassNotFoundException ignored) {
       }
     }
@@ -102,15 +100,10 @@ public class SharedSecrets {
   }
 
   public static JavaNetURLAccess getJavaNetURLAccess() {
-    if (javaNetURLAccess == null)
-      unsafe.ensureClassInitialized(java.net.URL.class);
     return javaNetURLAccess;
   }
 
   public static JavaUtilJarAccess javaUtilJarAccess() {
-    if (javaUtilJarAccess == null) {
-      unsafe.ensureClassInitialized(JarFile.class);
-    }
     return javaUtilJarAccess;
   }
   public static void setJavaUtilJarAccess(JavaUtilJarAccess access) {
@@ -125,10 +118,6 @@ public class SharedSecrets {
   // since this is a rather big beast with lost of bytecode, we don't add
   // this for now
   public static JavaIOAccess getJavaIOAccess() {
-    if (javaIOAccess == null) {
-      //unsafe.ensureClassInitialized(Console.class);
-      throw new UnsupportedOperationException("sun.misc.SharedSecrets.getJavaIOAccess() not supported yet");
-    }
     return javaIOAccess;
   }
 
@@ -149,9 +138,6 @@ public class SharedSecrets {
   }
 
   public static JavaIODeleteOnExitAccess getJavaIODeleteOnExitAccess() {
-    if (javaIODeleteOnExitAccess == null) {
-      unsafe.ensureClassInitialized(File.class);
-    }
     return javaIODeleteOnExitAccess;
   }
 
@@ -159,19 +145,11 @@ public class SharedSecrets {
     javaIOFileDescriptorAccess = jiofda;
   }
   public static JavaIOFileDescriptorAccess getJavaIOFileDescriptorAccess() {
-    if (javaIOFileDescriptorAccess == null) {
-      unsafe.ensureClassInitialized(FileDescriptor.class);
-      throw new UnsupportedOperationException("sun.misc.SharedSecrets.getJavaIOFileDescriptorAccess() not supported yet");
-    }
 
     return javaIOFileDescriptorAccess;
   }
 
   public static JavaObjectInputStreamAccess getJavaObjectInputStreamAccess() {
-    if (javaObjectInputStreamAccess == null) {
-      unsafe.ensureClassInitialized(ObjectInputStream.class);
-      throw new UnsupportedOperationException("sun.misc.SharedSecrets.getJavaObjectInputStreamAccess() not supported yet");
-    }
     
     return javaObjectInputStreamAccess;
   }
@@ -181,9 +159,6 @@ public class SharedSecrets {
   }
 
   public static JavaObjectInputFilterAccess getJavaObjectInputFilterAccess() {
-    if (javaObjectInputFilterAccess == null) {
-      unsafe.ensureClassInitialized(ObjectInputFilter.Config.class);
-    }
     return javaObjectInputFilterAccess;
   }
 
@@ -199,9 +174,6 @@ public class SharedSecrets {
   }
 
   public static JavaObjectInputStreamReadString getJavaObjectInputStreamReadString() {
-    if (javaObjectInputStreamReadString == null) {
-        unsafe.ensureClassInitialized(ObjectInputStream.class);
-    }
     return javaObjectInputStreamReadString;
   }
 

@@ -57,6 +57,20 @@ public class ClassFile extends BinaryClassSource {
   public static final int REF_NEW_INVOKESPECIAL = 8;
   public static final int REF_INVOKEINTERFACE = 9;
 
+public static final int ACC_PUBLIC = 0x0001;
+public static final int ACC_PRIVATE = 0x0002;
+public static final int ACC_PROTECTED = 0x0004;
+public static final int ACC_STATIC = 0x0008;
+public static final int ACC_FINAL = 0x0010;
+public static final int ACC_SUPER = 0x0020;
+public static final int ACC_INTERFACE = 0x0200;
+public static final int ACC_ABSTRACT = 0x0400;
+public static final int ACC_SYNTHETIC = 0x1000;
+public static final int ACC_ANNOTATION = 0x2000;
+public static final int ACC_ENUM = 0x4000;
+public static final int ACC_RECORD = 0x10000;
+public static final int ACC_SEALED = 0x20000;
+
   //for debugging
   public String className = null;//not used 
 
@@ -505,6 +519,13 @@ public class ClassFile extends BinaryClassSource {
   }
   private void setField(ClassFileReader reader, int fieldIndex, int accessFlags, String name, String descriptor){
     int p = pos;
+
+    // Check if field is a RECORD component
+    if((accessFlags & 0x10000) !=0) {
+      System.out.println("Detected RECORD component: "+name);
+
+    }
+
     reader.setField( this, fieldIndex, accessFlags, name, descriptor);
     pos = p;
   }
@@ -546,6 +567,15 @@ public class ClassFile extends BinaryClassSource {
   }
   private void setMethod(ClassFileReader reader, int methodIndex, int accessFlags, String name, String descriptor){
     int p = pos;
+
+    //Check if method is inside a RECORD or SEALED class
+    if((accessFlags & 0x10000) !=0) {
+      System.out.println("Method inside RECORD: "+ name);
+    }
+    if((accessFlags & 0x20000)!=0) {
+      System.out.println("Method inside SEALED class:" + name);
+    }
+
     reader.setMethod( this, methodIndex, accessFlags, name, descriptor);
     pos = p;
   }
@@ -945,6 +975,11 @@ public class ClassFile extends BinaryClassSource {
       int minor = readU2();
       int major = readU2();
 
+      //Adding support for Java 17+
+      if(major>61) {
+        throw new ClassParseException("Unsupported class version"+major);
+      }
+
       // get the const pool
       int cpCount = readU2();
       cpPos = new int[cpCount];
@@ -953,6 +988,12 @@ public class ClassFile extends BinaryClassSource {
 
       // the class essentials
       int accessFlags = readU2();
+
+      //Recognize Java 17 'record' classes (ACC_RECORD=0x10000)
+      boolean isRecord = (accessFlags & 0x10000) !=0;
+
+      //Recognize Java 17 'sealed' classes (ACC_SEALED=0x20000)
+      boolean isSealed = (accessFlags & 0x20000) !=0;
 
       cpIdx = readU2();
       String clsName = (String) cpValue[cpIdx];
@@ -1194,12 +1235,23 @@ public class ClassFile extends BinaryClassSource {
       cpIdx = readU2();
       String descriptor = utf8At(cpIdx);
 
+      //Detect if the field belongs to a RECORD class
+      if((accessFlags & 0x10000) !=0) {
+        System.out.println("Detected RECORD field: "+name);
+      }
+
       setField(reader, i, accessFlags, name, descriptor);
 
       int attrCount = readU2();
       parseFieldAttributes(reader, i, attrCount);
 
       setFieldDone(reader, i);
+
+      //Detect if this is a record component (Java 17)
+      if((accessFlags & ACC_FINAL) !=0) {
+        System.out.println("Detected final field (a Record component): "+name);
+
+      }
     }
 
     setFieldsDone(reader);
@@ -1216,6 +1268,14 @@ public class ClassFile extends BinaryClassSource {
 
       int attrLength = readI4(); // actually U4, but we don't support 2GB attributes
       setFieldAttribute(reader, fieldIdx, i, name, attrLength);
+
+      //Handle Java 17-specific attributes
+      if("Record".equals(name)) {
+        System.out.println("Detected RECORD field at index: "+ fieldIdx);
+      }
+      else {
+        pos += attrLength;
+      }
     }
 
     setFieldAttributesDone(reader, fieldIdx);
@@ -1248,12 +1308,29 @@ public class ClassFile extends BinaryClassSource {
       cpIdx = readU2();
       String descriptor = utf8At(cpIdx);
 
+      //Detect RECORD class methods
+      if((accessFlags & 0x10000) !=0) {
+        System.out.println("Method in RECORD class: "+name);
+      }
+      //Detect SEALED class methods
+      if((accessFlags & 0x20000) !=0) {
+        System.out.println("Method in SEALED class: "+name);
+      }
+      
       setMethod(reader, i, accessFlags, name, descriptor);
 
       int attrCount = readU2();
       parseMethodAttributes(reader, i, attrCount);
 
       setMethodDone(reader, i);
+
+      //Detect Java 17 Record-specific methods
+      if("<init>".equals(name)) {
+        System.out.println("Detected Record constructor: "+name);
+      }
+      else if("toString".equals(name) || "equals".equals(name) || "hashCode".equals(name)) {
+        System.out.println("Detected auto-generated Record method: "+name);
+      }
     }
 
     setMethodsDone(reader);
@@ -1270,6 +1347,14 @@ public class ClassFile extends BinaryClassSource {
 
       int attrLength = readI4(); // actually U4, but we don't support 2GB attributes
       setMethodAttribute(reader, methodIdx, i, name, attrLength);
+
+      //Handle Java 17-specific attributes
+      if("Record".equals(name)) {
+        System.out.println("Detected RECORD method at index: "+methodIdx);
+      }
+      else {
+        pos += attrLength;
+      }
     }
 
     setMethodAttributesDone(reader, methodIdx);
@@ -1344,6 +1429,19 @@ public class ClassFile extends BinaryClassSource {
 
       int attrLength = readI4(); // actually U4, but we don't support 2GB attributes
       setCodeAttribute(reader, tag, i, name, attrLength);
+
+      //Handle Java 17-specific attributes
+      if("PermittedSubclass".equals(name)) {
+        int subclassCount=readU2(); //No. of permitted classes
+        for(int j=0;j<subclassCount;j++) {
+          int subclassIdx=readU2();
+          String subclassName=utf8At(subclassIdx);
+          System.out.println("Deteected permitted subclass: "+subclassName);
+        }
+      }
+      else {
+        pos += attrLength;
+      }
     }
 
     setCodeAttributesDone(reader, tag);
@@ -1409,8 +1507,26 @@ public class ClassFile extends BinaryClassSource {
 
       int attrLength = readI4(); // actually U4, but we don't support 2GB attributes
       setClassAttribute(reader, i, name, attrLength);
-    }
 
+      //Detect Java 17-specific attributes 
+      if("Record".equals(name)) {
+        System.out.println("Detected Java 17 Record class");
+      }
+     else if("PermittedSubclasses".equals(name)) {
+        System.out.println("Detected Java 17 Sealed class");
+
+        int subclassCount=attrLength/2; //Each entry is 2 bytes
+        for(int j=0;j<subclassCount;j++) {
+          int subclassIdx =readU2();
+          String subclassName = utf8At(subclassIdx);
+          System.out.println("Detected permitted subclass: "+subclassName);
+        }
+      }
+      else {
+        pos += attrLength;
+      }
+
+    }
     setClassAttributesDone(reader);
   }
 
@@ -1454,6 +1570,17 @@ public class ClassFile extends BinaryClassSource {
       cpIdx = readU2();
       String innerSimpleName = (cpIdx != 0) ? (String) cpValue[cpIdx] : null;
       int accessFlags = readU2();
+
+      //Detect inner records
+      boolean isRecord=(accessFlags & ACC_RECORD) !=0;
+      if(isRecord) {
+        System.out.println("Detected inner record: "+innerClsName);
+      }
+      //Detect sealed classes
+      boolean isSealed=(accessFlags & ACC_SEALED) !=0;
+      if(isSealed) {
+        System.out.println("Detected sealed inner class: "+innerClsName);
+      }
 
       setInnerClass(reader, tag, i, outerClsName, innerClsName, innerSimpleName, accessFlags);
     }

@@ -88,7 +88,7 @@ public class INVOKESTATIC extends JVMInvokeInstruction {
     if (callee == null) {
       return ti.createAndThrowException("java.lang.NoSuchMethodException", cname + '.' + mname);
     }
-
+    
     // this can be actually different than (can be a base)
     ClassInfo ciCallee = callee.getClassInfo();
     
