@@ -286,10 +286,10 @@ test {
     enableAssertions = true
     maxHeapSize = "1024m"
 
-    include "**/*Test.class"
+   // include "**/*Test.class"
     exclude "**/SplitInputStreamTest.class"
-    exclude "**/JPF_*.class"
-    useJUnitPlatform()
+    //exclude "**/JPF_*.class"
+    useJUnit()
     jvmArgs += ['--add-exports', 'java.base/jdk.internal.access=ALL-UNNAMED', '--add-opens', 'java.base/jdk.internal.access=ALL-UNNAMED', '--add-exports', 'java.base/jdk.internal.misc=ALL-UNNAMED', '--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED', '--add-opens', 'java.base/java.util=ALL-UNNAMED']
 
     testLogging {
